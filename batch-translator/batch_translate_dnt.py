@@ -21,7 +21,8 @@ Translate the given text from English into {target_lang}.
 Preserve any placeholders like {{0}}, {{1}}, %s, or HTML tags.
 
 CRITICAL INSTRUCTION:
-The following terms MUST NOT be translated. They must remain EXACTLY as they appear in the source text:
+1. If a term is defined in the target language glossary (e.g., <glossary>), it MUST be translated according to the glossary. This has the absolute highest priority.
+2. If a term is in the list below, and is NOT overridden by the glossary, it MUST NOT be translated and must remain exactly as it appears:
 {dnt_str}
 
 Reference contexts for terminology and style constraints:
@@ -40,7 +41,8 @@ Translate the given text into {target_lang}.
 Preserve any placeholders like {{0}}, {{1}}, %s, or HTML tags.
 
 CRITICAL INSTRUCTION:
-The following terms MUST NOT be translated. They must remain EXACTLY as they appear in the source text:
+1. If a term is defined in the target language glossary (e.g., <target_glossary_*>), it MUST be translated according to the glossary. This has the absolute highest priority.
+2. If a term is in the list below, and is NOT overridden by the glossary, it MUST NOT be translated and must remain exactly as it appears:
 {dnt_str}
 
 Reference contexts for terminology and style constraints:
@@ -91,6 +93,32 @@ def load_glossary_for_lang(lang_name):
             print(f"Warning: Failed to load glossary file {filepath}: {e}")
     return ""
 
+def get_filtered_dnt_list(target_lang):
+    filtered_dnt = list(dnt_list)
+    lang_mapping = {
+        'swedish': 'swedish_glossary.json',
+        'sv': 'swedish_glossary.json',
+        'french': 'french_glossary.json',
+        'fr': 'french_glossary.json'
+    }
+    key = str(target_lang).lower().strip()
+    filename = lang_mapping.get(key)
+    if not filename:
+        possible_filename = f"{key}_glossary.json"
+        if os.path.exists(os.path.join(GLOSSARY_DIR, possible_filename)):
+            filename = possible_filename
+            
+    if filename:
+        filepath = os.path.join(GLOSSARY_DIR, filename)
+        try:
+            with open(filepath, 'r') as f:
+                glossary_dict = json.load(f)
+                glossary_keys = {str(k).lower().strip() for k in glossary_dict.keys()}
+                filtered_dnt = [term for term in filtered_dnt if str(term).lower().strip() not in glossary_keys]
+        except Exception as e:
+            pass
+    return filtered_dnt
+
 def generate_with_retry(prompt):
     for attempt in range(8):
         try:
@@ -132,7 +160,9 @@ def validate_translation(original, translated):
 
 def translate_anchor(text, target_lang="Swedish"):
     glossary = load_glossary_for_lang(target_lang)
-    sys_prompt = anchor_prompt_template.format(target_lang=target_lang, glossary=glossary, style=style, dnt_str=dnt_str)
+    filtered_dnt = get_filtered_dnt_list(target_lang)
+    filtered_dnt_str = ", ".join(filtered_dnt)
+    sys_prompt = anchor_prompt_template.format(target_lang=target_lang, glossary=glossary, style=style, dnt_str=filtered_dnt_str)
     prompt = f"{sys_prompt}\n\nText to translate:\n<text>\n{text}\n</text>"
     raw_translation = generate_with_retry(prompt)
     return validate_translation(str(text), raw_translation)
@@ -140,6 +170,8 @@ def translate_anchor(text, target_lang="Swedish"):
 def translate_downstream(en_text, anchor_text, target_lang, anchor_lang="Swedish"):
     anchor_glossary = load_glossary_for_lang(anchor_lang)
     target_glossary = load_glossary_for_lang(target_lang)
+    filtered_dnt = get_filtered_dnt_list(target_lang)
+    filtered_dnt_str = ", ".join(filtered_dnt)
     sys_prompt = downstream_prompt_template.format(
         target_lang=target_lang,
         target_lang_lower=target_lang.lower().replace(" ", "_"),
@@ -149,7 +181,7 @@ def translate_downstream(en_text, anchor_text, target_lang, anchor_lang="Swedish
         anchor_lang=anchor_lang,
         en_text=en_text,
         anchor_text=anchor_text,
-        dnt_str=dnt_str
+        dnt_str=filtered_dnt_str
     )
     prompt = f"{sys_prompt}\n\nTranslate the following English text into {target_lang}:\n<text>\n{en_text}\n</text>"
     raw_translation = generate_with_retry(prompt)

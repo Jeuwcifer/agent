@@ -29,6 +29,7 @@ When requested to translate a file, ensure you have:
    - `context/french_glossary.json`: The standard French terminology mapping.
    - `context/Translationsupport.md`: The core style guide and phrasing document.
    - `context/do_not_translate.json`: A list of terms (e.g., product names, system variables) that must remain exactly as they appear in the source text and never be translated.
+     *Design Priority Rule*: If a term is defined in a language-specific glossary, it MUST be translated according to that glossary. This has the absolute highest priority and overrides `do_not_translate.json`. Terms in `do_not_translate.json` should be programmatically filtered out of the active "do not translate" list for any target language where they conflict with that language's glossary.
 
    *Note: Code implementations must dynamically load the correct glossary based on the target language (e.g., searching for `context/{language}_glossary.json` or mapping language names to glossary files) rather than hardcoding a single language glossary for all translations.*
 
