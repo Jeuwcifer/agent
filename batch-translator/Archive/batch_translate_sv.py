@@ -1,6 +1,5 @@
 import pandas as pd
 from google import genai
-import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from time import sleep
@@ -13,7 +12,7 @@ with open('/home/user/.agents/skills/batch-translator/context/Translationsupport
 
 system_prompt_template = """You are a professional localization expert for Roxtec.
 Translate the given text into {target_lang}.
-Preserve any placeholders like {{0}}, {{1}}, %s, or HTML tags.
+Preserve any placeholders like {{0}}, {{1}}, %s, HTML tags, or formatting.
 
 Reference contexts for terminology and style constraints:
 <glossary>
@@ -60,7 +59,7 @@ def translate_text(text, target_lang):
     sys_prompt = system_prompt_template.format(target_lang=target_lang, glossary=glossary, style=style)
     prompt = f"{sys_prompt}\n\nText to translate:\n{text}"
     
-    for attempt in range(5):
+    for attempt in range(8):
         try:
             response = client.models.generate_content(
                 model='gemini-3.5-flash',
@@ -68,45 +67,44 @@ def translate_text(text, target_lang):
             )
             return response.text.strip()
         except Exception as e:
-            if '429' in str(e):
-                sleep((attempt + 1) * 3) # Backoff
+            err_msg = str(e)
+            if '429' in err_msg or 'Quota' in err_msg or 'exhausted' in err_msg.lower():
+                sleep((attempt + 1) * 5) # Exponential-ish backoff
             else:
-                return f"ERROR: {str(e)}"
+                sleep(2) # minor wait for other errors
     return "ERROR: Max retries exceeded"
 
 def process_row(index, row_dict):
     en_text = row_dict['en']
-    fr_text = translate_text(en_text, "French")
-    de_text = translate_text(en_text, "German")
-    return index, fr_text, de_text
+    sv_text = translate_text(en_text, "Swedish")
+    return index, sv_text
 
 def main():
-    print("Loading Excel...")
-    df = pd.read_excel('/home/user/.agents/skills/batch-translator/translation_en_es_nl-20260520T063532Z.xlsx', header=1)
+    input_path = '/home/user/.agents/skills/batch-translator/translation_fr_de_completed.xlsx'
+    output_path = '/home/user/.agents/skills/batch-translator/translation_fr_de_sv_completed.xlsx'
     
-    # TEST ONLY: Limit to 5 rows
-    df = df.head(5).copy()
+    print(f"Loading Excel from {input_path}...")
+    df = pd.read_excel(input_path)
     
-    df['fr'] = ""
-    df['de'] = ""
+    df['sv'] = ""
     
-    print(f"Translating {len(df)} rows...")
+    total_rows = len(df)
+    print(f"Translating {total_rows} rows to Swedish...")
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    # Parallel processing
+    with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {
             executor.submit(process_row, idx, row.to_dict()): idx 
             for idx, row in df.iterrows()
         }
         
-        for future in tqdm(as_completed(futures), total=len(df), desc="Translating (Test)"):
-            idx, fr, de = future.result()
-            df.at[idx, 'fr'] = fr
-            df.at[idx, 'de'] = de
+        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating to Swedish"):
+            idx, sv = future.result()
+            df.at[idx, 'sv'] = sv
                 
-    print(df[['en', 'fr', 'de']])
-    print("Saving to translated_output_test.xlsx...")
-    df.to_excel('/home/user/.agents/skills/batch-translator/translated_output_test.xlsx', index=False)
-    print("Done!")
+    print("Formatting output...")
+    df.to_excel(output_path, index=False)
+    print(f"Saved completed translations to {output_path}")
 
 if __name__ == "__main__":
     main()

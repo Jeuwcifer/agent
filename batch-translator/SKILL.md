@@ -9,19 +9,20 @@ When the user asks to translate strings, localize an application, or run a trans
 
 ## Architecture & Principles
 1. **Never use sequential loops for network calls**: All LLM API calls must be parallelized (e.g., via `ThreadPoolExecutor`).
-2. **Batch Context**: Never repeatedly read context documents (DOCX) or glossaries per row. Read them once during initialization, convert to a prompt string, and pass to worker threads.
-3. **Data Integrity & Validation**: 
+2. **Visual Feedback & Progress Tracking**: Show visual feedback when executing concurrent tasks. Always wrap `as_completed(futures)` with a `tqdm` progress bar to display real-time execution progress, ETA, and throughput on standard output.
+3. **Batch Context**: Never repeatedly read context documents (DOCX) or glossaries per row. Read them once during initialization, convert to a prompt string, and pass to worker threads.
+4. **Data Integrity & Validation**: 
    - Avoid raw cell-by-cell writes with libraries like `openpyxl`. Use `pandas` or proper XML parsing (`xml.etree.ElementTree`).
    - Implement strict pre-processing rules: Skip translation for URLs, strings marked as `translatable="false"`, empty strings, and strings containing only placeholders/numbers.
    - Implement strict post-processing validation: Compare the length of the generated translation to the original source. If the AI hallucinates contexts/style-guides (e.g., response length is 4x the original or contains known style guide text), automatically discard it and fallback to the original text.
-4. **Resiliency**: Implement basic exception handling in threads so a single failing row returns an error string instead of crashing the batch.
-5. **Semantic Triangulation (Anchor Language & Anchor Glossary)**: To prevent disambiguation errors and translation drift, employ a two-pass system:
+5. **Resiliency**: Implement basic exception handling in threads so a single failing row returns an error string instead of crashing the batch.
+6. **Semantic Triangulation (Anchor Language & Anchor Glossary)**: To prevent disambiguation errors and translation drift, employ a two-pass system:
    - Translate the source into the primary domain language (Swedish) first.
    - For all subsequent target languages, pass the source text, the generated Swedish anchor translation, and **both** the target glossary (if available) and the **Swedish anchor glossary** (as a universal semantic dictionary to map ambiguous English terms to precise Swedish domain concepts). Structurally isolate these in separate XML blocks (`<anchor_glossary_swedish>` and `<target_glossary_{lang}>`) inside the prompt to prevent lexical bleeding.
 
 ## Required Context Inputs
 When requested to translate a file, ensure you have:
-1. **Source File**: The target tabular data (e.g., Excel or CSV).
+1. **Source File**: The target tabular data (e.g., Excel or CSV). **Strict Search Location Constraint**: You must ONLY search for, locate, or load source/Excel files from inside the `batch-translator` skill directory (`/home/user/.agents/skills/batch-translator/`). Never scan external directories, user home, or other workspace folders unless explicitly given a specific absolute path by the user.
 2. **Target Languages**: What languages to translate into.
 3. **Authentication**: Verify you have access to API keys (e.g., `GOOGLE_APPLICATION_CREDENTIALS` or a local key config file) based on the LLM being used.
 4. **Context Files**: Reference the standard context files located in `context/`:
@@ -41,3 +42,33 @@ When requested to translate a file, ensure you have:
 5. Pass 2 (Downstream): Spin up concurrent threads for remaining target languages, injecting both the source text and the anchor translation into the prompt.
 6. Postprocess: Restore placeholders and validate length/hallucinations.
 7. Export the finalized DataFrame.
+
+## Standard Code Blueprint (Boilerplate)
+Every new or modified translation script written by this skill MUST conform to the following concurrency and visual progress bar structure:
+
+```python
+import pandas as pd
+from google import genai
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
+from time import sleep
+
+client = genai.Client()
+
+def process_row(idx, row):
+    # Concurrency worker logic here
+    # ...
+    return idx, translated_text
+
+def main():
+    df = pd.read_excel('input_file.xlsx')
+    total_rows = len(df)
+    
+    # ALWAYS use ThreadPoolExecutor + tqdm for visual progress tracking on stdout
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = {executor.submit(process_row, idx, row): idx for idx, row in df.iterrows()}
+        
+        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating Batch"):
+            idx, result = future.result()
+            df.at[idx, 'target_col'] = result
+```
