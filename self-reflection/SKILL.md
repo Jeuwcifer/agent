@@ -15,3 +15,6 @@ Enforce an internal review loop before final output. To prevent token bloat and 
 3. **Output**: Generate the final, refined response outside the tags.
 
 Only the final output should be fully formatted. The thinking and critique phases must remain strictly token-efficient.
+
+## Tool Execution Efficiency
+- **Single Edit Retry Rule**: When modifying files using targeted replacements (`edit`), if an edit fails once due to whitespace, indentation, or duplicate context mismatch, immediately expand the match window or switch to full-block overwrite (`write`) instead of performing repeated micro-read and retry cycles.
