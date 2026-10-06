@@ -58,7 +58,7 @@ Notes:
 
 4. **Deliverables**:
    - 1080p silent video file (`.mp4` / `.webm`) with visual cursor.
-   - Markdown guide containing high-level perspectives and detailed steps with embedded screenshots. Format this markdown so it doubles as a narrator script (spoken-word pacing, clear step transitions, matching the silent video flow).
+   - Companion Markdown guide containing general information only: executive summary & field impact, data model hierarchy, core capabilities overview, video milestone timecodes, comparison matrix, and enterprise terminology compliance reference. Granular step-by-step instructions, click-by-click walkthroughs, or action/result narrator scripts are unnecessary and strictly omitted from the .md documentation.
 
 ---
 
