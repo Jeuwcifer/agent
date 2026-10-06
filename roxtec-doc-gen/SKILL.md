@@ -58,7 +58,7 @@ Notes:
 
 4. **Deliverables**:
    - 1080p silent video file (`.mp4` / `.webm`) with visual cursor.
-   - Companion Markdown guide containing general information only: executive summary & field impact, data model hierarchy, core capabilities overview, video milestone timecodes, comparison matrix, and enterprise terminology compliance reference. Granular step-by-step instructions, click-by-click walkthroughs, or action/result narrator scripts are unnecessary and strictly omitted from the .md documentation.
+   - Companion Markdown guide containing general information only: executive summary & field impact, data model hierarchy, core capabilities overview, methods comparison matrix, and enterprise terminology compliance reference. Granular step-by-step instructions, click-by-click walkthroughs, video milestone timestamp tables, or action/result narrator scripts are unnecessary and strictly omitted from the .md documentation.
 
 ---
 
