@@ -12,3 +12,4 @@ pip-delete-this-directory.txt
 *.xlsx
 *.zip
 *.xml
+./roxtec-test-roxteclabs-305e8a9af61b.json

@@ -49,3 +49,7 @@ installed version.
 - Accessibility-tree snapshots with element refs for reliable interaction
 - Sessions, authentication vault, state persistence, video recording
 - Specialized skills for Electron apps, Slack, exploratory testing, cloud providers
+
+## Execution Caveats & Best Practices
+
+- **Selector Boundaries**: Playwright pseudo-selectors like `:has-text()` or `text="Foo"` work perfectly in `agent-browser click/fill/snapshot`. However, if injecting raw scripts via `eval --stdin`, you are confined to standard W3C DOM syntax. `document.querySelector(':has-text(...)')` will throw a SyntaxError. Use standard iteration instead: `Array.from(document.querySelectorAll('a')).find(el => el.textContent.includes('Foo'))`.

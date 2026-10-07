@@ -1,0 +1,70 @@
+{"idx": 5, "sv": "Skapa kabel", "pl": "Utw\u00f3rz kabel"}
+{"idx": 2, "sv": "Skapa asset", "pl": "Utw\u00f3rz asset"}
+{"idx": 13, "sv": "Radera asset", "pl": "Usu\u0144 asset"}
+{"idx": 16, "sv": "Radera kabel", "pl": "Usu\u0144 kabel"}
+{"idx": 9, "sv": "Skapa underh\u00e5llsplan", "pl": "Utw\u00f3rz plan konserwacji"}
+{"idx": 18, "sv": "Radera geolokalisering", "pl": "Usu\u0144 geolokalizacj\u0119"}
+{"idx": 4, "sv": "Skapa asset delm\u00e4ngd", "pl": "Utw\u00f3rz asset podzbi\u00f3r"}
+{"idx": 1, "sv": "Interagera med asset", "pl": "Interaguj z asset"}
+{"idx": 8, "sv": "Skapa inspektion", "pl": "Utw\u00f3rz inspekcj\u0119"}
+{"idx": 17, "sv": "Radera planritning", "pl": "Usu\u0144 plan kondygnacji"}
+{"idx": 0, "sv": "Kan tilldela kundadministrat\u00f6r", "pl": "Mo\u017ce przypisa\u0107 administratora klienta"}
+{"idx": 19, "sv": "Radera inspektion", "pl": "Usu\u0144 inspekcj\u0119"}
+{"idx": 10, "sv": "Skapa genomf\u00f6ring", "pl": "Utw\u00f3rz przepust"}
+{"idx": 15, "sv": "Radera asset delm\u00e4ngd", "pl": "Usu\u0144 asset podzbi\u00f3r"}
+{"idx": 7, "sv": "Skapa geolokalisering", "pl": "Utw\u00f3rz geolokalizacj\u0119"}
+{"idx": 6, "sv": "Skapa planl\u00f6sning", "pl": "Utw\u00f3rz plan pi\u0119tra"}
+{"idx": 21, "sv": "Radera genomf\u00f6ring", "pl": "Usu\u0144 przepust"}
+{"idx": 20, "sv": "Radera underh\u00e5llsplan", "pl": "Usu\u0144 plan konserwacji"}
+{"idx": 24, "sv": "Exportera inspektionsrapporter", "pl": "Eksportuj raporty z inspekcji"}
+{"idx": 25, "sv": "Exportera genomf\u00f6ringsrapporter", "pl": "Eksportuj raporty genomf\u00f6ringsowe"}
+{"idx": 14, "sv": "Radera asset bilaga", "pl": "Usu\u0144 za\u0142\u0105cznik asset"}
+{"idx": 12, "sv": "Skapa genomf\u00f6ringsinspektion", "pl": "Utw\u00f3rz inspekcj\u0119 przepustu"}
+{"idx": 22, "sv": "Radera genomf\u00f6ringsbilaga", "pl": "Usu\u0144 za\u0142\u0105cznik przepustu"}
+{"idx": 36, "sv": "Visa kund", "pl": "Wy\u015bwietl klienta"}
+{"idx": 3, "sv": "Skapa asset bilaga", "pl": "Utw\u00f3rz asset za\u0142\u0105cznik"}
+{"idx": 32, "sv": "Visa asset", "pl": "Poka\u017c asset"}
+{"idx": 27, "sv": "Hantera asset medarbetare", "pl": "Zarz\u0105dzaj asset wsp\u00f3\u0142pracownikami"}
+{"idx": 29, "sv": "Hantera kundbetalning", "pl": "Zarz\u0105dzaj p\u0142atno\u015bciami klienta"}
+{"idx": 47, "sv": "", "pl": ""}
+{"idx": 37, "sv": "Visa geolokalisering", "pl": "Wy\u015bwietl geolokalisacj\u0119"}
+{"idx": 34, "sv": "Visa asset delm\u00e4ngd", "pl": "Wy\u015bwietl asset podzbi\u00f3r"}
+{"idx": 23, "sv": "Radera genomf\u00f6ringsinspektion", "pl": "Usu\u0144 inspekcj\u0119 przepustu"}
+{"idx": 11, "sv": "Skapa genomf\u00f6ringsbilaga", "pl": "Utw\u00f3rz za\u0142\u0105cznik przepustu"}
+{"idx": 28, "sv": "Hantera kundmedarbetare", "pl": "Zarz\u0105dzaj wsp\u00f3\u0142pracownikami klienta"}
+{"idx": 35, "sv": "Visa kabel", "pl": "Poka\u017c kabel"}
+{"idx": 41, "sv": "Visa genomf\u00f6ring", "pl": "Wy\u015bwietl genomf\u00f6ring"}
+{"idx": 38, "sv": "Visa inspektion", "pl": "Wy\u015bwietl inspekcj\u0119"}
+{"idx": 30, "sv": "S\u00e4tt asset status till slutf\u00f6rd", "pl": "Ustaw status asset na uko\u0144czony"}
+{"idx": 39, "sv": "Visa underh\u00e5llsplan", "pl": "Wy\u015bwietl plan konserwacji"}
+{"idx": 26, "sv": "Lista kundmedarbetare", "pl": "Lista wsp\u00f3\u0142pracownik\u00f3w klienta"}
+{"idx": 42, "sv": "Visa genomf\u00f6ringsbilaga", "pl": "Wy\u015bwietl za\u0142\u0105cznik przepustu"}
+{"idx": 52, "sv": "Uppdatera asset", "pl": "Zaktualizuj asset"}
+{"idx": 51, "sv": "S\u00e4tt genomf\u00f6ringsstatus", "pl": "Ustaw status przepustu"}
+{"idx": 33, "sv": "Visa asset bilaga", "pl": "Wy\u015bwietl asset za\u0142\u0105cznik"}
+{"idx": 43, "sv": "Visa genomf\u00f6ringsinspektion", "pl": "Wy\u015bwietl inspekcj\u0119 przepustu"}
+{"idx": 54, "sv": "Uppdatera asset undergrupp", "pl": "Zaktualizuj asset podzbi\u00f3r"}
+{"idx": 50, "sv": "S\u00e4tt status f\u00f6r genomf\u00f6ringsunderh\u00e5ll", "pl": "Ustaw status konserwacji przepustu"}
+{"idx": 56, "sv": "Uppdatera kund", "pl": "Aktualizuj klienta"}
+{"idx": 59, "sv": "Uppdatera inspektion", "pl": "Zaktualizuj inspekcj\u0119"}
+{"idx": 46, "sv": "Skicka om medarbetarinbjudningar", "pl": "Wy\u015blij ponownie zaproszenia dla wsp\u00f3\u0142pracownik\u00f3w"}
+{"idx": 55, "sv": "Uppdatera kabel", "pl": "Aktualizuj kabel"}
+{"idx": 58, "sv": "Uppdatera geolokalisering", "pl": "Aktualizuj geolokalisacj\u0119"}
+{"idx": 53, "sv": "Uppdatera asset bilaga", "pl": "Zaktualizuj asset za\u0142\u0105cznik"}
+{"idx": 60, "sv": "Uppdatera underh\u00e5llsplan", "pl": "Zaktualizuj plan konserwacji"}
+{"idx": 48, "sv": "Kan st\u00e4lla in reparationsinsats", "pl": "Mo\u017cna ustawi\u0107 nak\u0142ad naprawy"}
+{"idx": 67, "sv": "Komplettera min information nu", "pl": "Uzupe\u0142nij moje informacje teraz"}
+{"idx": 61, "sv": "Uppdatera genomf\u00f6ring", "pl": "Zaktualizuj przepust"}
+{"idx": 45, "sv": "Redigera asset-information", "pl": "Edytuj informacje asset"}
+{"idx": 64, "sv": "Uppdatera genomf\u00f6ringsinspektion", "pl": "Aktualizuj inspekcj\u0119 przepustu"}
+{"idx": 69, "sv": "Klicka h\u00e4r f\u00f6r att logga in med ett annat konto", "pl": "Kliknij tutaj, aby zalogowa\u0107 si\u0119 na inne konto"}
+{"idx": 70, "sv": "Registrering kr\u00e4vs", "pl": "Wymagana rejestracja"}
+{"idx": 57, "sv": "Uppdatera planritningens skalfaktorer", "pl": "Aktualizuj skalfaktory rzutu kondygnacji"}
+{"idx": 66, "sv": "Ladda upp inspektionsrapporter", "pl": "Wgraj raporty inspekcji"}
+{"idx": 49, "sv": "S\u00e4tt status f\u00f6r genomf\u00f6ringsisolering", "pl": "Ustaw status izolacji przepustu"}
+{"idx": 68, "sv": "Fyll i dina kontouppgifter f\u00f6r att f\u00e5 tillg\u00e5ng till {0}.", "pl": "Uzupe\u0142nij informacje o swoim koncie, aby uzyska\u0107 dost\u0119p do {0}."}
+{"idx": 72, "sv": "Asset-administrat\u00f6r", "pl": "Asset Administrator"}
+{"idx": 62, "sv": "Uppdatera genomf\u00f6ringsbilaga", "pl": "Zaktualizuj za\u0142\u0105cznik przepustu"}
+{"idx": 44, "sv": "Visa genomf\u00f6ringsinspektionsbild", "pl": "Poka\u017c zdj\u0119cie inspekcyjne przepustu"}
+{"idx": 80, "sv": "Kundadministrat\u00f6r", "pl": "Administrator klienta"}
+{"idx": 63, "sv": "Kan uppdatera kabel i genomf\u00f6ring", "pl": "Mo\u017cna aktualizowa\u0107 kabel w przepu\u015bcie"}

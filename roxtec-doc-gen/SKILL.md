@@ -25,17 +25,58 @@ Notes:
 ## Key Locators & Disambiguation Rules
 
 - **Startup Modals & Pre-flight Settling**: Asynchronous popups ("Download the mobile app", "Don't show at startup") render 1-3s after page transitions and intercept clicks. Always install a continuous background watcher (`setInterval`), AND wait 2.5-3s after navigating to an asset URL to trigger `dismiss_popups()` with `#showAtStartup` checkbox + `Close` BEFORE starting screen recording or capturing Step 0 screenshots.
+- **Context Isolation on `record start`**:
+  `agent-browser record start` launches a fresh browser context/page. Any DOM watchers (`_startupWatcher` interval) and `smart_effects.js` must be re-injected immediately *after* `record start` begins so asynchronous modals cannot mount during video capture.
 - **Add Transit Modal Buttons & Commit Rules**:
   - Use exact match: `button[data-test="commit"]` (or `grep -E 'button "Add"'`) to click the final create button.
   - Do NOT use generic `grep -i "Add"`, which erroneously matches `button "Add and set status"` (`commit-and-set-status`) or background `Add transit` buttons.
   - **Product Selection vs Quick Commit**: Leaving Product Group as default ("Please select") allows immediate single-click transit commit via `button[data-test="commit"]`. If a specific Product Group (e.g. "Roxtec rectangular") is selected, Solution, Opening Size, Rows, and Columns cascade into mandatory fields before commit is enabled.
 - **Collaborators Button Disambiguation**: The `data-test="manage-collaborators"` attribute is shared across 2 DOM nodes (an invisible 0-width element and the active menu item in the Manage dropdown). Always select the active node using `.rt-dropdown-item[data-test="manage-collaborators"]` or filter matches by `offsetParent !== null`.
+- **Manage Buttons**: 
+  - Asset-level (opens Collaborators, subsets, etc.): `button[data-test="manage-asset-detail-asset-button"]`
+  - Row-level (transit specific): Usually scoped to table rows, avoid generic "Manage" text match.
+- **Transit Wizard Progression**: Use `button[data-test="next"]` to navigate through the Identifier, Demand specification, and Product steps before the final `button[data-test="commit"]`.
 - **Floor Plan Canvas Toolbar**:
   - Open Place Item drawer: `button[data-test="item-placement-action"]` (displays `+` / `add` icon).
   - Close Place Item drawer: `button[data-test="dialog-close"]`.
 - **Canvas Drag & Drop**:
   - Dragging directly to target `"canvas"` via `agent-browser drag "span.rt-badge--primary[draggable='true']" "canvas"` reliably drops the item at canvas center coordinates.
 - **Unique Naming Rule**: Always append a timestamp (e.g. `TR_$(date +%s)` or `FP_$(date +%s)`) to names when creating transits or floor plans to avoid duplicate name validation errors.
+- **Geolocations View & Map Pinning**:
+  - Nav tab: `a[data-test="geolocations"]`
+  - Add location action: `button[data-test="geolocation-add-action"]`
+  - Creation drawer: `div[data-test="add.geolocation"]`
+  - Active draggable marker: `div[data-test="activeMarker"]` (spawns at map center)
+  - Coordinate inputs: `input#latitude`, `input#longitude` (updating values dynamically positions pin on Leaflet map)
+  - Commit button: `button[data-test="submit-geolocation-button"]`
+  - Drawer close button: `button[data-test="dialog-close"]`
+  - Location details drawer: Opened by clicking map pin `div[data-test="<location_name>"]` or `div.leaflet-marker-icon`. Contains `Transits` and `Floor plans` linkage tabs.
+  - **Dynamic Marker IDs**: Newly created geolocations generate a Leaflet marker with `data-test="<Exact Name Given>"`. Ensure names are uniquely timestamped to easily click them later.
+  - **Detail Drawer Tabs (Floor plans/Transits)**: Inner drawer tabs do not have reliable `data-test` attributes. Use text-based JS filtering: `Array.from(document.querySelectorAll('a.rt-tab')).find(a => a.textContent.includes('Floor plans') && a.getBoundingClientRect().x > 0)`
+  - **List Filters**: The 'Associated' and 'All' buttons lack data-tests. Find them via `Array.from(document.querySelectorAll('button')).find(b => b.textContent.trim() === 'All')`.
+  - View selector: `select#view` (`asset-geo-locations` for Map View, `asset-geo-locations-detail` for List View)
+  - **Editing Geolocations**:
+    - **Map View Path**:
+      1. Click pin: `div[data-test="<Location_Name>"]` or `div.leaflet-marker-icon` (opens left details drawer).
+      2. Open menu: `button:has-text("Manage")` inside `.rt-geolocation-drawer`.
+      3. Trigger edit: `button[data-test="edit-geolocation"]` (opens right Edit drawer).
+      4. Submit: `button:has-text("Save")`.
+    - **List View Path**:
+      1. Switch view: `select#view` -> `asset-geo-locations-detail`.
+      2. Trigger edit directly: `button[data-test="geolocation-edit-action"]` within row `.rt-list-item`.
+      3. Submit: `button:has-text("Save")` or close via `button[data-test="dialog-close"]`.
+
+- **Leaflet Map Marker Dragging (Fluid Batch Execution)**:
+  Standard `agent-browser drag` and synthetic `MouseEvent` dispatching inside `eval` fail to update Leaflet's internal coordinates. Additionally, never execute `agent-browser mouse move` in a loop using individual CLI invocations (adds ~150ms per-step latency → choppy 3 FPS).
+  Stream the entire waypoint trajectory in a single `agent-browser batch` call passing a JSON array of commands:
+  ```python
+  commands = [["mouse", "move", str(sx), str(sy)], ["mouse", "down"]]
+  for px, py in interpolated_waypoints:
+      commands.append(["mouse", "move", str(px), str(py)])
+  commands.append(["mouse", "up"])
+  subprocess.run(["agent-browser", "--session", session, "batch"], input=json.dumps(commands), text=True)
+  ```
+  This streams 50+ commands/sec with zero per-step process overhead, ensuring fluid 60 FPS marker drag.
 
 ## Process
 
@@ -51,6 +92,7 @@ Notes:
 3. **Generate Silent Video Guide**:
    - Use `record_template.sh` as the base.
    - **Silent Video Mandate**: Never include audio or sound tracks. Video output must be strictly silent (`-an`).
+   - **Clean UI & No On-Screen Text Bars Mandate**: Never inject text bars, banner overlays, caption bars, or floating explanation windows onto the recording canvas. The application UI must remain 100% clean and unoccluded. Use only smooth SVG cursor gliding (`moveTo`) and click ripple animations (`clickRipple`). All high-level context, operational impact, and general information belong strictly in the companion Markdown documentation.
    - Maintain appropriate visual dwell times (`pace_step 1.5`-`2.5s`) so viewers can follow the actions.
    - Run the persistent startup modal watcher to guarantee uninterrupted click actions.
    - Animate pointer movements with SVG cursor gliding (`moveTo`) and click ripple animations (`clickRipple`).
@@ -103,6 +145,19 @@ function dismiss_popups {
         if (closeBtn) closeBtn.click();
     })();
 JS
+}
+
+function ensure_authenticated {
+    local snap
+    snap=$(agent-browser --session "$SESSION" snapshot -i 2>&1 || true)
+    if echo "$snap" | grep -qi "Welcome"; then
+        agent-browser --session "$SESSION" fill 'input[type="email"], #username' 'rtdtest4@proton.me'
+        agent-browser --session "$SESSION" click 'button:has-text("Continue")'
+        agent-browser --session "$SESSION" wait --load networkidle
+        agent-browser --session "$SESSION" fill 'input[type="password"], #password' 'Roxtec123!'
+        agent-browser --session "$SESSION" click 'button:has-text("Continue")'
+        agent-browser --session "$SESSION" wait --load networkidle
+    fi
 }
 
 function ensure_effects {
@@ -287,6 +342,7 @@ ensure_effects
 
 # 3. Start Recording
 echo "Starting screen recording..."
+agent-browser --session "$SESSION" record stop >/dev/null 2>&1 || true
 agent-browser --session "$SESSION" record start "$RAW_VIDEO"
 SECONDS=0
 

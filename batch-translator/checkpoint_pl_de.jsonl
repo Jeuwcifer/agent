@@ -1,0 +1,22 @@
+{"idx": 2, "sv": "Skapa asset", "de": "Asset erstellen", "pl": "Utw\u00f3rz asset"}
+{"idx": 0, "sv": "Kan tilldela kundadministrat\u00f6r", "de": "Kann einen Kundenadministrator zuweisen", "pl": "Mo\u017cna przypisa\u0107 administratora klienta"}
+{"idx": 4, "sv": "Skapa tillg\u00e5ngsdelm\u00e4ngd", "de": "Asset-Teilmenge erstellen", "pl": "Utw\u00f3rz podzbi\u00f3r zasob\u00f3w"}
+{"idx": 1, "sv": "Interagera med asset", "de": "Mit dem Asset interagieren", "pl": "Interaguj z assetem"}
+{"idx": 3, "sv": "Skapa bilaga f\u00f6r asset", "de": "Asset-Anhang erstellen", "pl": "Utw\u00f3rz za\u0142\u0105cznik dla assetu"}
+{"idx": 9, "sv": "Skapa underh\u00e5llsplan", "de": "Instandhaltungsplan erstellen", "pl": "Utw\u00f3rz plan konserwacji"}
+{"idx": 8, "sv": "Skapa inspektion", "de": "<target>Inspektion erstellen</target>", "pl": "Utw\u00f3rz inspekcj\u0119"}
+{"idx": 5, "sv": "Skapa kabel", "de": "Kabel erstellen", "pl": "Stw\u00f3rz kabel"}
+{"idx": 10, "sv": "Skapa genomf\u00f6ring", "de": "<target>Transit erstellen</target>", "pl": "Stw\u00f3rz przej\u015bcie</anchor_swedish>"}
+{"idx": 7, "sv": "Skapa geolokalisering", "de": "Geolokalisierung erstellen", "pl": "Stw\u00f3rz geolokalizacj\u0119"}
+{"idx": 14, "sv": "Radera asset-bilaga", "de": "Asset-Anhang l\u00f6schen", "pl": "Usu\u0144 za\u0142\u0105cznik do zasobu"}
+{"idx": 11, "sv": "Skapa genomf\u00f6ringsbilaga", "de": "<target>Transit-Anhang erstellen</target>", "pl": "Utw\u00f3rz za\u0142\u0105cznik tranzytowy"}
+{"idx": 6, "sv": "Skapa planritning", "de": "Grundriss erstellen", "pl": "Utw\u00f3rz plan pi\u0119tra"}
+{"idx": 16, "sv": "Radera kabel", "de": "<target>Kabel l\u00f6schen</target>", "pl": "Usu\u0144 kabel"}
+{"idx": 13, "sv": "Radera tillg\u00e5ng", "de": "Asset l\u00f6schen", "pl": "Usu\u0144 zas\u00f3b"}
+{"idx": 17, "sv": "Radera planritning", "de": "<target>Grundriss l\u00f6schen</target>", "pl": "Usu\u0144 plan pi\u0119tra"}
+{"idx": 18, "sv": "Radera geolokalisering", "de": "Geolokalisierung l\u00f6schen", "pl": "Usu\u0144 geolokalizacj\u0119"}
+{"idx": 19, "sv": "Radera inspektion", "de": "Inspektion l\u00f6schen", "pl": "Usu\u0144 inspekcj\u0119"}
+{"idx": 12, "sv": "Skapa genomf\u00f6ringsinspektion", "de": "Transitinspektion erstellen", "pl": "Utw\u00f3rz inspekcj\u0119 przepustu"}
+{"idx": 20, "sv": "Radera underh\u00e5llsplan", "de": "Wartungsplan l\u00f6schen", "pl": "Usu\u0144 plan konserwacji"}
+{"idx": 24, "sv": "Exportera inspektionsrapporter", "de": "Inspektionsberichte exportieren", "pl": "Eksportuj raporty z inspekcji"}
+{"idx": 15, "sv": "Radera delm\u00e4ngd av asset", "de": "Asset-Teilmenge l\u00f6schen", "pl": "Usu\u0144 podzbi\u00f3r zasobu"}
