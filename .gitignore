@@ -10,6 +10,7 @@ env/
 pip-log.txt
 pip-delete-this-directory.txt
 *.xlsx
+*.orig
 *.zip
 *.xml
-./roxtec-test-roxteclabs-305e8a9af61b.json
+roxtec-test-roxteclabs-305e8a9af61b.json

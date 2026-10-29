@@ -1,11 +1,11 @@
 ---
 name: skill-retrospective
-description: Analyzes conversation sessions and execution traces to identify information gaps, tool friction, and trial-and-error loops. Formulates realistic, high-leverage improvements to add missing knowledge into skills, workflows, or wikis for faster future runs. Prompts the user to grade each suggestion on a 1-10 scale.
+description: Analyzes conversation sessions and execution traces to identify information gaps, tool friction, and trial-and-error loops. Formulates realistic, high-leverage improvements to add missing knowledge into skills, workflows, or wikis for faster future runs. Uses the get-good skill to log these suggestions.
 ---
 
 # Skill Retrospective & Continuous Improvement
 
-A meta-skill that audits chat sessions and tool execution traces to diagnose where missing context, trial-and-error loops, or tool missteps delayed the final outcome. It translates session friction into actionable, concrete additions for skills or knowledge bases, and prompts the user to grade every recommendation on a 1 to 10 scale.
+A meta-skill that audits chat sessions and tool execution traces to diagnose where missing context, trial-and-error loops, or tool missteps delayed the final outcome. It translates session friction into actionable, concrete additions for skills or knowledge bases, and uses the get-good skill to persist them.
 
 ---
 
@@ -15,7 +15,7 @@ A meta-skill that audits chat sessions and tool execution traces to diagnose whe
 > **If certain information would have been available earlier, then it would have been possible to reach the end result that much sooner. And missteps avoided.**  
 > **What are some realistic ways we can add this information so it's available for the next run?**  
 >  
-> **Each suggestion should be graded on a scale of 1 to 10 by the user."**
+> **Generate unlimited suggestions and save them using the get-good skill."**
 
 ---
 
@@ -50,14 +50,14 @@ Trigger `skill-retrospective` when:
                            │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│ 4. Structured Suggestion Cards with User Grading (1-10)│
-│    Format proposals with clear impact & scoring blocks │
+│ 4. Standardized Suggestion Generation                  │
+│    Format proposals with clear impact blocks           │
 └──────────────────────────┬─────────────────────────────┘
                            │
                            ▼
 ┌────────────────────────────────────────────────────────┐
-│ 5. Closed-Loop Implementation                          │
-│    User grades proposals; agent applies high-ranked    │
+│ 5. Knowledge Base Ingestion                            │
+│    Use get-good skill to log suggestions as articles   │
 └────────────────────────────────────────────────────────┘
 ```
 
@@ -100,9 +100,9 @@ Identify the most realistic, sustainable location to persist the missing knowled
 
 ---
 
-### Phase 4: Standardized Suggestion Cards for User Grading
+### Phase 4: Standardized Suggestion Generation
 
-Present each proposal using the standardized suggestion card. Every card **must** feature a user grading block:
+Formulate each proposal clearly, detailing the exact improvement and its impact. Generate as many suggestions as necessary to address all identified friction points (do not limit the count).
 
 ```markdown
 ### [SUGG-01] Title of Improvement
@@ -116,9 +116,6 @@ Present each proposal using the standardized suggestion card. Every card **must*
 - **Realistic Solution Vector**:
   [Skill Instructions / Knowledge Wiki / Pre-flight Script / Parameter Constraint]
 
-- **Target Location**:
-  `[path/to/target/file.md]` (Section: `[Section Header]`)
-
 - **Proposed Addition**:
   ```markdown
   [Exact text, selector rule, or code snippet to add]
@@ -126,30 +123,15 @@ Present each proposal using the standardized suggestion card. Every card **must*
 
 - **Expected Savings**:
   [e.g., Eliminates 4 tool calls; cuts ~2 minutes of trial-and-error; prevents UI block.]
-
-- **User Grade**: `[ ___ / 10 ]`
 ```
-
-#### User Grading Rubric (1 to 10 Scale):
-- **1 – 3 (Low):** Trivial, fragile, or too specific to a one-off scenario. Not worth codifying.
-- **4 – 6 (Moderate):** Helpful optimization. Reduces token churn or slightly speeds up execution.
-- **7 – 8 (High):** Substantial time and failure reduction across multiple workflows. Clean, realistic addition.
-- **9 – 10 (Critical):** High-leverage architectural fix. Prevents recurring hard failures or eliminates major diagnostic loops.
 
 ---
 
-### Phase 5: Closed-Loop Application
+### Phase 5: Knowledge Base Ingestion
 
-Conclude the retrospective report by asking the user to provide their ratings:
+Do not automatically implement the suggestions by editing skill files directly, and do not ask the user for a grade. Instead, use the `get-good` skill to record the suggestions:
 
-```markdown
-## Interactive Scoring Prompt
-
-Please rate each proposal above on a scale of **1 to 10** (e.g., `SUGG-01: 9/10, SUGG-02: 6/10`).
-For any suggestions you score **7 or higher** (or explicitly approve), I will immediately commit the changes to the corresponding skill files and knowledge bases.
-```
-
-When the user responds with their scores:
-1. Filter suggestions scoring **7 or higher** (or user-approved items).
-2. Use the `edit` or `write` tools to update the target `SKILL.md`, `wiki/`, or script files.
-3. Show the committed diff and confirm that the skill is upgraded for subsequent runs.
+1. For each suggestion formulated in Phase 4, invoke the `get-good` skill.
+2. Provide the suggestion details to `get-good` so it can ingest it as a distinct improvement article.
+3. The `get-good` skill will handle creating the article, grouping similar suggestions, and increasing priority scores.
+4. Conclude by informing the user that the suggestions have been successfully logged in the improvement wiki for future prioritization.

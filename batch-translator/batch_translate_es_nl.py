@@ -1,9 +1,11 @@
 import os
+import sys
 import re
 import glob
 import json
 import time
 import random
+import shutil
 import pandas as pd
 from google import genai
 from google.genai import types
@@ -61,14 +63,8 @@ def load_glossary_for_lang(lang_name):
 
 # Design Priority Rule: Filter out DNT terms that conflict with language glossary
 def get_active_dnt(glossary_dict, dnt_list):
-    active = []
-    glossary_keys = [str(k).lower().strip() for k in glossary_dict.keys()]
-    for term in dnt_list:
-        term_clean = str(term).lower().strip()
-        if any(re.search(r'\b' + re.escape(term_clean) + r'\b', k) for k in glossary_keys):
-            continue
-        active.append(term)
-    return active
+    glossary_keys = {str(k).lower().strip() for k in glossary_dict.keys()}
+    return [term for term in dnt_list if str(term).lower().strip() not in glossary_keys]
 
 # Pre-processing validation: skip non-translatable text
 def is_translatable(text):
@@ -167,14 +163,14 @@ def main():
     
     # Pre-build System Prompt: Pass 1 (Swedish Anchor)
     sys_prompt_anchor = f"""You are a professional localization expert for Roxtec.
-Translate the given text from English into Swedish (Svenska) as the primary domain reference.
+Translate the given text in <source_english_text> from English into Swedish (Svenska) as the primary domain reference.
 
 Follow these strict guidelines:
-1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags exactly. Do not translate or alter them.
+1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags or math symbols (<, >) exactly. Do not translate or alter them.
 2. Glossary has highest priority: If a term is in the <glossary>, you MUST translate it according to that glossary.
 3. Terms in <do_not_translate> must NOT be translated and must remain exactly as they appear in the source text, unless overridden by the glossary.
-4. Respect the core style guide and phrasing guidelines.
-5. Return ONLY the translated Swedish text. Do not return explanations, markdown code fences, or style notes.
+4. Respect the core style guide and phrasing guidelines. Use <developer_comment> only for contextual disambiguation; NEVER translate or output the developer comment.
+5. Return ONLY the translated Swedish text for <source_english_text>. Do not return explanations, XML tags, markdown code fences, or style notes.
 
 <style_guide>
 {style_guide}
@@ -191,15 +187,15 @@ Follow these strict guidelines:
 
     # Pre-build System Prompt: Pass 2 (Spanish Target)
     sys_prompt_es = f"""You are a professional localization expert for Roxtec.
-Translate the given English text into Spanish (Español).
+Translate the given English text in <source_english_text> into Spanish (Español).
 
 Follow these strict guidelines:
-1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags exactly.
+1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags or math symbols (<, >) exactly.
 2. Glossary priority: If a term is defined in <target_glossary_spanish>, you MUST use that translation. This has absolute highest priority.
 3. Terms in <do_not_translate> must NOT be translated and must remain exactly as in English, unless overridden by the target glossary.
-4. Semantic Triangulation: Use the Swedish anchor translation and <anchor_glossary_swedish> to disambiguate English terms and select the precise Roxtec domain concepts.
+4. Semantic Triangulation: Use the Swedish anchor translation and <anchor_glossary_swedish> to disambiguate English terms and select the precise Roxtec domain concepts. Use <developer_comment> only for contextual disambiguation; NEVER translate or output the developer comment.
 5. Respect the core style guide.
-6. Return ONLY the translated Spanish text. No explanations, markdown wrappers, or metadata.
+6. Return ONLY the translated Spanish text for <source_english_text>. No explanations, XML tags, markdown wrappers, or metadata.
 
 <style_guide>
 {style_guide}
@@ -220,15 +216,15 @@ Follow these strict guidelines:
 
     # Pre-build System Prompt: Pass 2 (Dutch Target)
     sys_prompt_nl = f"""You are a professional localization expert for Roxtec.
-Translate the given English text into Dutch (Nederlands).
+Translate the given English text in <source_english_text> into Dutch (Nederlands).
 
 Follow these strict guidelines:
-1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags exactly.
+1. Preserve all placeholders like {{0}}, {{1}}, %s, %d, and HTML/XML tags or math symbols (<, >) exactly.
 2. Glossary priority: If a term is defined in <target_glossary_dutch>, you MUST use that translation. This has absolute highest priority.
 3. Terms in <do_not_translate> must NOT be translated and must remain exactly as in English, unless overridden by the target glossary.
-4. Semantic Triangulation: Use the Swedish anchor translation and <anchor_glossary_swedish> to disambiguate English terms and select the precise Roxtec domain concepts.
+4. Semantic Triangulation: Use the Swedish anchor translation and <anchor_glossary_swedish> to disambiguate English terms and select the precise Roxtec domain concepts. Use <developer_comment> only for contextual disambiguation; NEVER translate or output the developer comment.
 5. Respect the core style guide.
-6. Return ONLY the translated Dutch text. No explanations, markdown wrappers, or metadata.
+6. Return ONLY the translated Dutch text for <source_english_text>. No explanations, XML tags, markdown wrappers, or metadata.
 
 <style_guide>
 {style_guide}
@@ -247,28 +243,42 @@ Follow these strict guidelines:
 </do_not_translate>
 """
 
-    # Strict Search Location Constraint: Locate Excel file only inside batch-translator skill directory
-    excel_files = glob.glob(os.path.join(BASE_DIR, 'translation_en_es_nl*.xlsx'))
-    if not excel_files:
-        excel_files = glob.glob(os.path.join(BASE_DIR, '*.xlsx'))
-    
-    # Exclude temporary or previously completed files
-    candidate_files = [f for f in excel_files if not f.endswith(('_completed.xlsx', '_output.xlsx', '.backup', '.orig'))]
-    if not candidate_files:
-        print("No input Excel file found in batch-translator directory.")
-        return
-        
-    input_file = max(candidate_files, key=os.path.getmtime)
+    # Locate target Excel file strictly from inside batch-translator directory unless explicit path given
+    search_dir = sys.argv[1] if len(sys.argv) > 1 else BASE_DIR
+    if os.path.isfile(search_dir):
+        input_file = search_dir
+    else:
+        if not os.path.isdir(search_dir):
+            search_dir = BASE_DIR
+        excel_files = glob.glob(os.path.join(search_dir, '*.xlsx'))
+        candidate_files = [
+            f for f in excel_files
+            if not f.endswith(('_completed.xlsx', '_output.xlsx', '_updated.xlsx', '_test.xlsx', '.backup', '.orig'))
+        ]
+        if not candidate_files:
+            print(f"No input Excel file found in {search_dir}.")
+            return
+        input_file = max(candidate_files, key=os.path.getmtime)
+
     print(f"Loaded target Excel file: {input_file}")
     
-    # Read proper data (header=1)
-    df = pd.read_excel(input_file, header=1)
+    # Dynamically detect sheet name and header row (header=0 vs header=1)
+    xl = pd.ExcelFile(input_file)
+    orig_sheet_name = xl.sheet_names[0]
+    df_check = pd.read_excel(input_file, sheet_name=orig_sheet_name, header=0, keep_default_na=False)
+    if any(col in df_check.columns for col in ['ID', 'en', 'Master']):
+        header_row = 0
+        df = df_check
+    else:
+        header_row = 1
+        df = pd.read_excel(input_file, sheet_name=orig_sheet_name, header=1, keep_default_na=False)
+
     total_rows = len(df)
-    print(f"Total rows in dataset: {total_rows}")
+    print(f"Total rows in dataset: {total_rows} (sheet='{orig_sheet_name}', header={header_row})")
     
-    # Ensure source English is extracted from Master if 'en' is missing/NaN
+    # Ensure source English is extracted from Master if 'en' is missing/empty
     if 'en' in df.columns and 'Master' in df.columns:
-        df['en'] = df['en'].fillna(df['Master'])
+        df['en'] = df.apply(lambda r: r['en'] if str(r['en']).strip() != '' else r['Master'], axis=1)
     elif 'Master' in df.columns:
         df['en'] = df['Master']
         
@@ -285,17 +295,25 @@ Follow these strict guidelines:
     # PASS 1: Swedish Anchor Translation (Concurrency + tqdm)
     print("\n--- Pass 1: Translating to Swedish Anchor (Domain Reference) ---")
     def process_anchor(idx, row):
-        source_text = row['en'] if pd.notna(row['en']) and str(row['en']).strip() else row.get('Master', '')
+        source_text = str(row['en']).strip() if str(row['en']).strip() else str(row.get('Master', '')).strip()
+        comment_text = str(row.get('Comment', '')).strip()
         if is_translatable(source_text):
-            raw_trans = call_gemini(prompt=str(source_text), system_instruction=sys_prompt_anchor)
-            sv_text = validate_translation(str(source_text), raw_trans)
+            prompt_content = f"""<source_english_text>
+{source_text}
+</source_english_text>
+
+<developer_comment>
+{comment_text}
+</developer_comment>"""
+            raw_trans = call_gemini(prompt=prompt_content, system_instruction=sys_prompt_anchor)
+            sv_text = validate_translation(source_text, raw_trans)
         else:
-            sv_text = source_text if pd.notna(source_text) else ""
+            sv_text = source_text
         return idx, sv_text
 
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(process_anchor, idx, row): idx for idx, row in df.iterrows()}
-        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating Swedish Anchor"):
+        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating Swedish Anchor", file=sys.stdout):
             try:
                 idx, sv_text = future.result()
                 df.at[idx, 'sv'] = sv_text
@@ -305,8 +323,9 @@ Follow these strict guidelines:
     # PASS 2: Downstream Target Languages (Spanish and Dutch) (Concurrency + tqdm)
     print("\n--- Pass 2: Translating to Target Languages (es, nl) via Semantic Triangulation ---")
     def process_downstream(idx, row):
-        source_text = row['en'] if pd.notna(row['en']) and str(row['en']).strip() else row.get('Master', '')
-        sv_text = row['sv']
+        source_text = str(row['en']).strip() if str(row['en']).strip() else str(row.get('Master', '')).strip()
+        comment_text = str(row.get('Comment', '')).strip()
+        sv_text = str(row['sv']).strip()
         
         if is_translatable(source_text):
             prompt_content = f"""<source_english_text>
@@ -316,23 +335,27 @@ Follow these strict guidelines:
 <anchor_swedish_translation>
 {sv_text}
 </anchor_swedish_translation>
+
+<developer_comment>
+{comment_text}
+</developer_comment>
 """
             # Spanish translation
             raw_es = call_gemini(prompt=prompt_content, system_instruction=sys_prompt_es)
-            es_text = validate_translation(str(source_text), raw_es)
+            es_text = validate_translation(source_text, raw_es)
             
             # Dutch translation
             raw_nl = call_gemini(prompt=prompt_content, system_instruction=sys_prompt_nl)
-            nl_text = validate_translation(str(source_text), raw_nl)
+            nl_text = validate_translation(source_text, raw_nl)
         else:
-            es_text = source_text if pd.notna(source_text) else ""
-            nl_text = source_text if pd.notna(source_text) else ""
+            es_text = source_text
+            nl_text = source_text
             
         return idx, es_text, nl_text
 
     with ThreadPoolExecutor(max_workers=20) as executor:
         futures = {executor.submit(process_downstream, idx, row): idx for idx, row in df.iterrows()}
-        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating Downstream (ES & NL)"):
+        for future in tqdm(as_completed(futures), total=total_rows, desc="Translating Downstream (ES & NL)", file=sys.stdout):
             try:
                 idx, es_text, nl_text = future.result()
                 df.at[idx, 'es'] = es_text
@@ -341,28 +364,29 @@ Follow these strict guidelines:
                 print(f"Exception at row {futures[future]}: {e}")
 
     # Prepare export DataFrame (including Swedish anchor column)
-    export_cols = ['ID', 'Comment', 'Master', 'en', 'es', 'nl', 'sv']
+    export_cols = [c for c in ['ID', 'Comment', 'Master', 'en', 'es', 'nl', 'sv'] if c in df.columns]
     final_df = df[export_cols].copy()
     
     # Save a backup of the original if not already saved
     backup_file = input_file + '.orig'
     if not os.path.exists(backup_file):
-        import shutil
         shutil.copyfile(input_file, backup_file)
         print(f"Created backup of original file: {backup_file}")
 
-    # Update input file in place (preserving row offset startrow=1 for exact structural compatibility)
+    # Update input file in place (preserving original sheet_name and header_row offset)
     with pd.ExcelWriter(input_file) as writer:
-        final_df.to_excel(writer, startrow=1, index=False)
+        final_df.to_excel(writer, sheet_name=orig_sheet_name, startrow=header_row, index=False)
     print(f"Successfully updated original file: {input_file}")
 
     # Also save standard completed export files
     completed_file = input_file.replace('.xlsx', '_completed.xlsx')
-    final_df.to_excel(completed_file, index=False)
+    with pd.ExcelWriter(completed_file) as writer:
+        final_df.to_excel(writer, sheet_name=orig_sheet_name, index=False)
     print(f"Saved completed export: {completed_file}")
 
     alt_completed = os.path.join(BASE_DIR, 'translation_en_es_nl_completed.xlsx')
-    final_df.to_excel(alt_completed, index=False)
+    with pd.ExcelWriter(alt_completed) as writer:
+        final_df.to_excel(writer, sheet_name='Translation', index=False)
     print(f"Saved completed export: {alt_completed}")
 
 if __name__ == '__main__':
