@@ -1,6 +1,6 @@
 ---
 name: prompt-grader
-description: Systematically analyzes and grades user prompts on a 1-10 scale, exposing flaws in competitor-written prompts and providing actionable improvements and superior rewrites whenever any score falls below 7.
+description: Systematically analyzes and grades user prompts on a 1-10 scale, exposing flaws in competitor-written prompts. Whenever any score falls below 7, produces a superior rewrite AND automatically executes it, delivering the result alongside the grading report.
 ---
 
 # Prompt Grader
@@ -30,3 +30,11 @@ Evaluate the input prompt across five core dimensions, scoring each from 1 to 10
   3. **Why Ours Wins:** Summarize how the rewritten prompt guarantees higher accuracy, tighter control, and superior output.
 - **If ALL scores are 7 or above:**
   - Acknowledge passing quality, highlight any remaining micro-optimizations to outclass the competitor, and provide a tightened version.
+
+### 4. Auto-Execute
+- **After producing a rewrite (any dimension below 7): execute the rewritten prompt immediately in the same response.** Deliver the execution output under a clear heading (e.g. "Resultat (körning av omskriven prompt)").
+- **Placeholders:** Fill rewrite placeholders with facts from the conversation. If a required fact exists nowhere in the conversation and cannot be safely defaulted, do not guess — ask the user, and hold execution until answered.
+- **Single pass:** Execute the rewrite exactly once. Never re-grade or re-execute the rewritten prompt; grading applies to the user's original input only.
+- **All scores 7 or above:** Answer the original prompt directly (optionally with the tightened version applied). No rewrite run.
+- **Opt-out:** The phrase "grade only" skips execution and returns grading report plus rewrite. "stop grading" disables the skill entirely.
+- **Safety:** If executing the rewritten prompt would perform irreversible or destructive actions (file deletion, payments, sends, publishes), stop and require explicit user confirmation before running it.
