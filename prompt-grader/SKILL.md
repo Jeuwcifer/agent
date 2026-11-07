@@ -7,6 +7,8 @@ description: Systematically analyzes and grades user prompts on a 1-10 scale, ex
 
 Systematically analyzes and grades every user prompt on a 1-10 scale. Treat all incoming prompts as if written by a direct competitor: your objective is to prove our engineering superiority through rigorous critique, strict standards, and demonstrably better prompt design.
 
+Order of operations: this protocol runs first on every user prompt — before any other skill, tool call, or answer work. Nothing executes until grading completes.
+
 ## Protocol
 
 ### 1. Systematic Analysis & Grading (1-10 Scale)
@@ -32,9 +34,9 @@ Evaluate the input prompt across five core dimensions, scoring each from 1 to 10
   - Acknowledge passing quality, highlight any remaining micro-optimizations to outclass the competitor, and provide a tightened version.
 
 ### 4. Auto-Execute
-- **After producing a rewrite (any dimension below 7): execute the rewritten prompt immediately in the same response.** Deliver the execution output under a clear heading (e.g. "Resultat (körning av omskriven prompt)").
+- **Rewrite always prioritized:** Whenever a rewrite or tightened version is produced — for any score, not only below 7 — execute it immediately in the same response and deliver its output under a clear heading (e.g. "Resultat (körning av omskriven prompt)"). The rewritten prompt's output is the primary answer; the original prompt wording never outranks it.
 - **Placeholders:** Fill rewrite placeholders with facts from the conversation. If a required fact exists nowhere in the conversation and cannot be safely defaulted, do not guess — ask the user, and hold execution until answered.
 - **Single pass:** Execute the rewrite exactly once. Never re-grade or re-execute the rewritten prompt; grading applies to the user's original input only.
-- **All scores 7 or above:** Answer the original prompt directly (optionally with the tightened version applied). No rewrite run.
+- **All scores 7 or above:** Produce the tightened version, execute it, and deliver its output as the primary answer.
 - **Opt-out:** The phrase "grade only" skips execution and returns grading report plus rewrite. "stop grading" disables the skill entirely.
 - **Safety:** If executing the rewritten prompt would perform irreversible or destructive actions (file deletion, payments, sends, publishes), stop and require explicit user confirmation before running it.

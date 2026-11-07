@@ -1,0 +1,12 @@
+# Ingestion Log
+
+Append-only chronological record.
+
+- 2026-11-06: Ingested [pending-arkivdigital-account.md](pending-arkivdigital-account.md). Trigger: trial-and-error loop during arkivdigital-bilder login debugging (401 despite token, 404 activate_pending, web login invalid). Ungrouped, score 1.
+- 2026-11-06: Ingested [arkivdigital-resend-activation.md](arkivdigital-resend-activation.md). Trigger: user could not find activation link; no resend UI existed. Grouped with pending-account article into [arkivdigital-auth](arkivdigital-auth.md), score 2.
+- 2026-11-06: Ingested [arkivdigital-demo-role.md](arkivdigital-demo-role.md). Trigger: two failed theories (activation, session takeover) before Cognito claims revealed demo role with zero subscriptions = paywalled images. Group arkivdigital-auth score 3.
+- 2026-11-06: Ingested [arkivdigital-tiles2-waf.md](arkivdigital-tiles2-waf.md). Trigger: trial active + metadata 200 but every tiles2 request 403 from server; Chromium also blocked → IP-based WAF. Group arkivdigital-auth score 4.
+- 2026-11-06: Ingested field-map gotcha into arkivdigital-bilder SKILL.md: volume_collections attributes use `name`, not `display_name` (matcher silently returned NO MATCH); city parishes need prefix matching (Helsingborgs socken -> Helsingborgs landsförsamling etc.). Trigger: double failed match run in skane_download.py.
+- 2026-11-06: Ingested trial-limit fact into arkivdigital-signup SKILL.md: second ArkivDigital account from same environment activated but stayed role demo / zero subscriptions (activateTrial silently no-op while another trial active). Group arkivdigital-auth, score 5.
+- 2026-11-06: Token loop bug: ad_signup.py verified access BEFORE saving token; verify probe 403 (api-host endpoint throttle) skipped save -> stale token -> 401 loop across cycles. Fix: save token first, verify non-fatal. Also recorded: api host throttles images/volume_versions selectively (thumbnails 200) after heavy polling; runner cycles self-heal.
+- 2026-11-06: Riksarkivet duplicate-check method + result: fonds SE/LLA/10038 (Listers häradsrätt) tree via /Tree/SubTree/?postid=...&inc=N pagination (100 nodes/page); volume records carry "Reproducerad på: C<number>" when digitized. Digitized there = FII Bouppteckningar vols 1-24 (C0110693-C0110716) only; zero overlap with the 78-volume ArkivDigital queue (AIa domboks 116-232 checked directly, none digitized).

@@ -14,3 +14,4 @@ pip-delete-this-directory.txt
 *.zip
 *.xml
 roxtec-test-roxteclabs-305e8a9af61b.json
+batch-translator/env.yaml

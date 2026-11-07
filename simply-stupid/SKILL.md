@@ -1,6 +1,6 @@
 ---
 name: simply-stupid
-description: Enforces Occam's razor, KISS, and YAGNI principles across engineering tasks. Favors minimal changes, standard libraries, flat control flow, and zero speculative abstraction while preserving correctness and security.
+description: Enforces Occam's razor, KISS, and YAGNI principles across engineering tasks. Favors minimal changes, standard libraries, flat control flow, and zero speculative abstraction while preserving correctness
 ---
 
 # simply-stupid
@@ -18,7 +18,6 @@ Apply Occam's razor and KISS ("Keep It Simple, Stupid") to all engineering, code
 
 Simplicity never overrides:
 - **Correctness**: Solutions must handle required behavior and real edge cases accurately.
-- **Security**: Never bypass authentication, authorization, safe secret handling, or injection protections for brevity.
 - **Input Validation**: Always validate and sanitize untrusted inputs at system boundaries.
 - **Error Handling**: Always check, surface, and handle errors explicitly; never silence failures to shorten code.
 - **Explicit User Constraints**: Follow user-specified architectures, libraries, and requirements even when a simpler alternative exists.

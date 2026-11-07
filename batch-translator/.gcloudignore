@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+Archive/
+old/
+*.xlsx
+*.orig
+*.jsonl
+*.pyc
+.git/
+env.yaml
+*.sh
